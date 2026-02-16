@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../core/app_colors.dart';
 import '../../core/app_theme.dart';
 
@@ -18,63 +19,66 @@ class _HomeScreenState extends State<HomeScreen> {
       backgroundColor: const Color(0xFFF9F9FC),
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(20),
+          padding: EdgeInsets.all(20.w),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // Header
               Row(
                 children: [
-                  const CircleAvatar(
-                    backgroundImage: NetworkImage(
+                  CircleAvatar(
+                    radius: 20.r,
+                    backgroundImage: const NetworkImage(
                       'https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-1.2.1&auto=format&fit=crop&w=100&q=80',
                     ),
                   ),
-                  const SizedBox(width: 12),
+                  SizedBox(width: 12.w),
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
                         "Good Morning, Sarah",
-                        style: AppTheme.serifTitleStyle.copyWith(fontSize: 18),
+                        style: AppTheme.serifTitleStyle.copyWith(
+                          fontSize: 18.sp,
+                        ),
                       ),
-                      const Text(
+                      Text(
                         "Thursday, October 24",
                         style: TextStyle(
                           color: AppColors.greyText,
-                          fontSize: 12,
+                          fontSize: 12.sp,
                         ),
                       ),
                     ],
                   ),
                   const Spacer(),
                   Container(
-                    padding: const EdgeInsets.all(8),
+                    padding: EdgeInsets.all(8.w),
                     decoration: BoxDecoration(
                       color: Colors.white,
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(12.r),
                     ),
-                    child: const Icon(
+                    child: Icon(
                       Icons.lock_outline,
-                      size: 20,
-                      color: Color(0xFF5C6E8C),
+                      size: 20.sp,
+                      color: const Color(0xFF5C6E8C),
                     ),
                   ),
                 ],
               ),
-              const SizedBox(height: 24),
+              SizedBox(height: 24.h),
 
               // Write Today Card
               Container(
-                padding: const EdgeInsets.all(20),
+                padding: EdgeInsets.all(20.w),
                 decoration: BoxDecoration(
                   color: Colors.white,
-                  borderRadius: BorderRadius.circular(24),
+                  borderRadius: BorderRadius.circular(24.r),
                   boxShadow: [
                     BoxShadow(
                       color: Colors.black.withOpacity(0.05),
-                      blurRadius: 20,
-                      offset: const Offset(0, 5),
+                      blurRadius: 20.r,
+                      offset: Offset(0, 5.h),
                     ),
                   ],
                 ),
@@ -87,14 +91,14 @@ class _HomeScreenState extends State<HomeScreen> {
                         Text(
                           "Write Today's Diary",
                           style: AppTheme.serifTitleStyle.copyWith(
-                            fontSize: 22,
+                            fontSize: 22.sp,
                           ),
                         ),
                         Container(
-                          padding: const EdgeInsets.all(10),
+                          padding: EdgeInsets.all(10.w),
                           decoration: BoxDecoration(
                             color: AppColors.pink,
-                            borderRadius: BorderRadius.circular(14),
+                            borderRadius: BorderRadius.circular(14.r),
                           ),
                           child: const Icon(
                             Icons.edit_note,
@@ -103,28 +107,28 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                       ],
                     ),
-                    const SizedBox(height: 4),
+                    SizedBox(height: 4.h),
                     Text(
                       "Capture your thoughts and feelings.",
                       style: AppTheme.serifTitleStyle.copyWith(
                         fontStyle: FontStyle.italic,
                         color: AppColors.greyText,
-                        fontSize: 14,
+                        fontSize: 14.sp,
                       ),
                     ),
-                    const SizedBox(height: 20),
+                    SizedBox(height: 20.h),
                     Container(
-                      padding: const EdgeInsets.all(16),
+                      padding: EdgeInsets.all(16.w),
                       decoration: BoxDecoration(
                         color: AppColors.inputBg,
-                        borderRadius: BorderRadius.circular(16),
+                        borderRadius: BorderRadius.circular(16.r),
                       ),
                       child: const Text(
                         "What's on your mind?",
                         style: TextStyle(color: Colors.grey),
                       ),
                     ),
-                    const SizedBox(height: 16),
+                    SizedBox(height: 16.h),
                     Align(
                       alignment: Alignment.centerRight,
                       child: ElevatedButton(
@@ -133,11 +137,11 @@ class _HomeScreenState extends State<HomeScreen> {
                           backgroundColor: AppColors.pink,
                           foregroundColor: Colors.white,
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(20),
+                            borderRadius: BorderRadius.circular(20.r),
                           ),
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 24,
-                            vertical: 12,
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 24.w,
+                            vertical: 12.h,
                           ),
                         ),
                         child: const Text("Write Now"),
@@ -147,7 +151,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
 
-              const SizedBox(height: 30),
+              SizedBox(height: 30.h),
 
               // Calendar Section
               Row(
@@ -155,24 +159,24 @@ class _HomeScreenState extends State<HomeScreen> {
                 children: [
                   Text(
                     "October 2024",
-                    style: AppTheme.serifTitleStyle.copyWith(fontSize: 20),
+                    style: AppTheme.serifTitleStyle.copyWith(fontSize: 20.sp),
                   ),
-                  const Row(
+                  Row(
                     children: [
-                      Icon(Icons.chevron_left, color: Colors.grey),
-                      SizedBox(width: 10),
-                      Icon(Icons.chevron_right, color: Colors.grey),
+                      const Icon(Icons.chevron_left, color: Colors.grey),
+                      SizedBox(width: 10.w),
+                      const Icon(Icons.chevron_right, color: Colors.grey),
                     ],
                   ),
                 ],
               ),
-              const SizedBox(height: 20),
+              SizedBox(height: 20.h),
               // Calendar Grid (Hardcoded for exact UI match)
               Container(
-                padding: const EdgeInsets.all(20),
+                padding: EdgeInsets.all(20.w),
                 decoration: BoxDecoration(
                   color: Colors.white,
-                  borderRadius: BorderRadius.circular(24),
+                  borderRadius: BorderRadius.circular(24.r),
                 ),
                 child: Column(
                   children: [
@@ -181,7 +185,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       children: ["M", "T", "W", "T", "F", "S", "S"]
                           .map(
                             (e) => SizedBox(
-                              width: 30,
+                              width: 30.w,
                               child: Center(
                                 child: Text(
                                   e,
@@ -195,22 +199,22 @@ class _HomeScreenState extends State<HomeScreen> {
                           )
                           .toList(),
                     ),
-                    const SizedBox(height: 16),
+                    SizedBox(height: 16.h),
                     _calendarRow(
                       ["20", "21", "22", "1", "2", "3", "4"],
                       [false, false, false, true, false, true, false],
                     ),
-                    const SizedBox(height: 16),
+                    SizedBox(height: 16.h),
                     _calendarRow(
                       ["5", "6", "7", "8", "9", "10", "11"],
                       [false, true, false, false, false, true, false],
                     ),
-                    const SizedBox(height: 16),
+                    SizedBox(height: 16.h),
                     _calendarRow(
                       ["12", "13", "14", "15", "16", "17", "18"],
                       [true, false, false, false, false, false, false],
                     ),
-                    const SizedBox(height: 16),
+                    SizedBox(height: 16.h),
                     _calendarRow(
                       ["19", "20", "21", "22", "23", "24", "25"],
                       [false, false, false, false, false, false, false],
@@ -220,7 +224,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
 
-              const SizedBox(height: 30),
+              SizedBox(height: 30.h),
 
               // Memories Section
               Row(
@@ -228,7 +232,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 children: [
                   Text(
                     "My Memories",
-                    style: AppTheme.serifTitleStyle.copyWith(fontSize: 20),
+                    style: AppTheme.serifTitleStyle.copyWith(fontSize: 20.sp),
                   ),
                   const Text(
                     "View all",
@@ -239,9 +243,9 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 ],
               ),
-              const SizedBox(height: 16),
+              SizedBox(height: 16.h),
               SizedBox(
-                height: 220,
+                height: 220.h,
                 child: ListView(
                   scrollDirection: Axis.horizontal,
                   clipBehavior: Clip.none,
@@ -251,7 +255,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       "The coffee today felt extra warm and comforting...",
                       "https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?ixlib=rb-1.2.1&auto=format&fit=crop&w=400&q=80",
                     ),
-                    const SizedBox(width: 16),
+                    SizedBox(width: 16.w),
                     _memoryCard(
                       "Oct 10",
                       "Walked through the park today. The leaves were...",
@@ -260,7 +264,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   ],
                 ),
               ),
-              const SizedBox(height: 20),
+              SizedBox(height: 20.h),
             ],
           ),
         ),
@@ -272,13 +276,13 @@ class _HomeScreenState extends State<HomeScreen> {
         selectedItemColor: AppColors.pink,
         unselectedItemColor: const Color(0xFFA0A0B0),
         showUnselectedLabels: true,
-        selectedLabelStyle: const TextStyle(
-          fontSize: 10,
+        selectedLabelStyle: TextStyle(
+          fontSize: 10.sp,
           fontWeight: FontWeight.bold,
           letterSpacing: 1,
         ),
-        unselectedLabelStyle: const TextStyle(
-          fontSize: 10,
+        unselectedLabelStyle: TextStyle(
+          fontSize: 10.sp,
           fontWeight: FontWeight.w500,
           letterSpacing: 1,
         ),
@@ -309,17 +313,17 @@ class _HomeScreenState extends State<HomeScreen> {
         bool isSelected = index == selectedIndex;
         bool showDot = hasDot[index];
         return Container(
-          width: 35,
-          height: 40,
+          width: 35.w,
+          height: 40.h,
           decoration: isSelected
               ? BoxDecoration(
                   color: AppColors.pink,
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(12.r),
                   boxShadow: [
                     BoxShadow(
                       color: AppColors.pink.withOpacity(0.4),
-                      blurRadius: 8,
-                      offset: const Offset(0, 4),
+                      blurRadius: 8.r,
+                      offset: Offset(0, 4.h),
                     ),
                   ],
                 )
@@ -335,8 +339,8 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
               if (showDot && !isSelected) ...[
-                const SizedBox(height: 4),
-                const CircleAvatar(radius: 2, backgroundColor: AppColors.pink),
+                SizedBox(height: 4.h),
+                CircleAvatar(radius: 2.r, backgroundColor: AppColors.pink),
               ],
             ],
           ),
@@ -347,10 +351,10 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget _memoryCard(String date, String quote, String imageUrl) {
     return Container(
-      width: 160,
+      width: 160.w,
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(20.r),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -360,9 +364,9 @@ class _HomeScreenState extends State<HomeScreen> {
               children: [
                 Container(
                   decoration: BoxDecoration(
-                    borderRadius: const BorderRadius.vertical(
-                      top: Radius.circular(20),
-                      bottom: Radius.circular(20),
+                    borderRadius: BorderRadius.vertical(
+                      top: Radius.circular(20.r),
+                      bottom: Radius.circular(20.r),
                     ),
                     image: DecorationImage(
                       image: NetworkImage(imageUrl),
@@ -372,9 +376,9 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
                 Container(
                   decoration: BoxDecoration(
-                    borderRadius: const BorderRadius.vertical(
-                      top: Radius.circular(20),
-                      bottom: Radius.circular(20),
+                    borderRadius: BorderRadius.vertical(
+                      top: Radius.circular(20.r),
+                      bottom: Radius.circular(20.r),
                     ),
                     gradient: LinearGradient(
                       begin: Alignment.topCenter,
@@ -387,14 +391,14 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 ),
                 Positioned(
-                  bottom: 12,
-                  left: 12,
+                  bottom: 12.h,
+                  left: 12.w,
                   child: Text(
                     date,
-                    style: const TextStyle(
+                    style: TextStyle(
                       color: Colors.white,
                       fontWeight: FontWeight.bold,
-                      fontSize: 14,
+                      fontSize: 14.sp,
                     ),
                   ),
                 ),
@@ -402,14 +406,14 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ),
           Padding(
-            padding: const EdgeInsets.all(12.0),
+            padding: EdgeInsets.all(12.0.w),
             child: Text(
               "\"$quote\"",
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
               style: AppTheme.serifTitleStyle.copyWith(
                 fontStyle: FontStyle.italic,
-                fontSize: 12,
+                fontSize: 12.sp,
                 color: const Color(0xFF555555),
               ),
             ),

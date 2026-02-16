@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../core/app_colors.dart';
 import '../../core/app_theme.dart';
 import '../../shared/widgets/custom_text_field.dart';
@@ -13,58 +14,58 @@ class LoginScreen extends StatelessWidget {
     return Scaffold(
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 24),
+          padding: EdgeInsets.symmetric(horizontal: 24.w),
           child: Column(
             children: [
-              const SizedBox(height: 40),
+              SizedBox(height: 40.h),
               // Icon
               Container(
-                padding: const EdgeInsets.all(20),
+                padding: EdgeInsets.all(20.w),
                 decoration: BoxDecoration(
                   color: AppColors.pink.withOpacity(0.1),
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(
+                child: Icon(
                   Icons.menu_book_rounded,
                   color: AppColors.pink,
-                  size: 32,
+                  size: 32.sp,
                 ),
               ),
-              const SizedBox(height: 24),
+              SizedBox(height: 24.h),
               Text(
                 "My Diary",
-                style: AppTheme.serifTitleStyle.copyWith(fontSize: 32),
+                style: AppTheme.serifTitleStyle.copyWith(fontSize: 32.sp),
               ),
-              const SizedBox(height: 8),
+              SizedBox(height: 8.h),
               Text(
                 "Welcome back to your private space.",
                 textAlign: TextAlign.center,
                 style: AppTheme.serifTitleStyle.copyWith(
                   color: AppColors.greyText,
-                  fontSize: 16,
+                  fontSize: 16.sp,
                   fontStyle: FontStyle.italic,
                 ),
               ),
-              const SizedBox(height: 48),
+              SizedBox(height: 48.h),
 
               const CustomTextField(
                 label: "Email or Phone Number",
                 hint: "e.g. hello@diary.com",
               ),
-              const SizedBox(height: 32),
+              SizedBox(height: 32.h),
 
               PrimaryButton(text: "Get OTP", onTap: onLogin),
 
-              const SizedBox(height: 40),
+              SizedBox(height: 40.h),
               Row(
                 children: [
                   Expanded(child: Divider(color: Colors.grey.shade300)),
-                  const Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 16),
+                  Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 16.w),
                     child: Text(
                       "OR CONTINUE WITH",
                       style: TextStyle(
-                        fontSize: 11,
+                        fontSize: 11.sp,
                         fontWeight: FontWeight.bold,
                         color: Colors.grey,
                       ),
@@ -73,35 +74,32 @@ class LoginScreen extends StatelessWidget {
                   Expanded(child: Divider(color: Colors.grey.shade300)),
                 ],
               ),
-              const SizedBox(height: 32),
+              SizedBox(height: 32.h),
               Row(
                 children: [
                   Expanded(
                     child: _socialBtn("Google", Icons.g_mobiledata),
                   ), // Placeholder icon
-                  const SizedBox(width: 16),
+                  SizedBox(width: 16.w),
                   Expanded(child: _socialBtn("Apple", Icons.apple)),
                 ],
               ),
-              const SizedBox(height: 60),
+              SizedBox(height: 60.h),
               Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 8,
-                ),
+                padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
                 decoration: BoxDecoration(
                   border: Border.all(color: Colors.grey.shade200),
-                  borderRadius: BorderRadius.circular(20),
+                  borderRadius: BorderRadius.circular(20.r),
                 ),
-                child: const Row(
+                child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(Icons.lock, size: 14, color: Colors.grey),
-                    SizedBox(width: 8),
+                    Icon(Icons.lock, size: 14.sp, color: Colors.grey),
+                    SizedBox(width: 8.w),
                     Text(
                       "END-TO-END ENCRYPTED",
                       style: TextStyle(
-                        fontSize: 10,
+                        fontSize: 10.sp,
                         fontWeight: FontWeight.bold,
                         color: AppColors.darkText,
                       ),
@@ -109,13 +107,13 @@ class LoginScreen extends StatelessWidget {
                   ],
                 ),
               ),
-              const SizedBox(height: 16),
+              SizedBox(height: 16.h),
               Text(
                 "Your thoughts are for your eyes only. No one, not even us, can read your diary entries.",
                 textAlign: TextAlign.center,
-                style: TextStyle(color: Colors.grey.shade400, fontSize: 12),
+                style: TextStyle(color: Colors.grey.shade400, fontSize: 12.sp),
               ),
-              const SizedBox(height: 20),
+              SizedBox(height: 20.h),
             ],
           ),
         ),
@@ -127,20 +125,23 @@ class LoginScreen extends StatelessWidget {
     return OutlinedButton(
       onPressed: () {},
       style: OutlinedButton.styleFrom(
-        padding: const EdgeInsets.symmetric(vertical: 16),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+        padding: EdgeInsets.symmetric(vertical: 16.h),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(30.r),
+        ),
         side: BorderSide(color: Colors.grey.shade200),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(icon, color: Colors.black, size: 20),
-          const SizedBox(width: 8),
+          Icon(icon, color: Colors.black, size: 20.sp),
+          SizedBox(width: 8.w),
           Text(
             text,
-            style: const TextStyle(
+            style: TextStyle(
               color: Colors.black,
               fontWeight: FontWeight.w600,
+              fontSize: 14.sp,
             ),
           ),
         ],

@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../core/app_colors.dart';
 import '../../core/app_theme.dart';
 
@@ -30,32 +31,32 @@ class _SplashScreenState extends State<SplashScreen> {
               children: [
                 // Logo
                 Container(
-                  height: 100,
-                  width: 100,
+                  height: 100.h,
+                  width: 100.h,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     color: Colors.white,
                     boxShadow: [
                       BoxShadow(
                         color: AppColors.pink.withOpacity(0.1),
-                        blurRadius: 30,
-                        spreadRadius: 10,
+                        blurRadius: 30.r,
+                        spreadRadius: 10.r,
                       ),
                     ],
                   ),
                   child: Center(
                     child: Image.asset(
                       'assets/images/splash_pencil.png',
-                      height: 150,
-                      width: 150,
+                      height: 150.h,
+                      width: 150.h,
                     ),
                   ),
                 ),
-                const SizedBox(height: 30),
+                SizedBox(height: 30.h),
                 // Title
                 RichText(
                   text: TextSpan(
-                    style: AppTheme.serifTitleStyle.copyWith(fontSize: 42),
+                    style: AppTheme.serifTitleStyle.copyWith(fontSize: 42.sp),
                     children: const [
                       TextSpan(
                         text: 'My',
@@ -68,13 +69,13 @@ class _SplashScreenState extends State<SplashScreen> {
                     ],
                   ),
                 ),
-                const SizedBox(height: 10),
+                SizedBox(height: 10.h),
                 Text(
                   'Capture your peace',
                   style: AppTheme.serifTitleStyle.copyWith(
                     fontStyle: FontStyle.italic,
                     color: AppColors.greyText,
-                    fontSize: 18,
+                    fontSize: 18.sp,
                   ),
                 ),
               ],
@@ -82,22 +83,22 @@ class _SplashScreenState extends State<SplashScreen> {
           ),
           // Bottom Loader
           Positioned(
-            bottom: 60,
-            left: 50,
-            right: 50,
+            bottom: 60.h,
+            left: 50.w,
+            right: 50.w,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Row(
+                Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
                       'INITIALIZING\nSANCTUARY',
                       style: TextStyle(
                         letterSpacing: 1.5,
-                        fontSize: 12,
+                        fontSize: 12.sp,
                         fontWeight: FontWeight.w600,
-                        color: Color(0xFF6B6B80),
+                        color: const Color(0xFF6B6B80),
                       ),
                     ),
                     Text(
@@ -105,21 +106,22 @@ class _SplashScreenState extends State<SplashScreen> {
                       style: TextStyle(
                         color: AppColors.pink,
                         fontWeight: FontWeight.bold,
+                        fontSize: 14.sp,
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 15),
+                SizedBox(height: 15.h),
                 ClipRRect(
-                  borderRadius: BorderRadius.circular(4),
+                  borderRadius: BorderRadius.circular(4.r),
                   child: LinearProgressIndicator(
                     value: 0.3,
                     backgroundColor: Colors.grey.shade200,
                     color: AppColors.pink,
-                    minHeight: 2,
+                    minHeight: 2.h,
                   ),
                 ),
-                const SizedBox(height: 30),
+                SizedBox(height: 30.h),
                 Center(
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -136,9 +138,9 @@ class _SplashScreenState extends State<SplashScreen> {
 
   Widget _dot(bool active) {
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 4),
-      width: 6,
-      height: 6,
+      margin: EdgeInsets.symmetric(horizontal: 4.w),
+      width: 6.w,
+      height: 6.w,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
         color: active ? AppColors.pink : Colors.grey.shade300,

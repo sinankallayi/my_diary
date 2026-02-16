@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../core/app_colors.dart';
 import '../../core/app_theme.dart';
 import '../../shared/widgets/custom_text_field.dart';
@@ -13,11 +14,11 @@ class ProfileSetupScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         leading: const Icon(Icons.arrow_back, color: AppColors.pink),
-        title: const Text(
+        title: Text(
           "Profile Setup",
           style: TextStyle(
             color: AppColors.darkText,
-            fontSize: 16,
+            fontSize: 16.sp,
             fontWeight: FontWeight.bold,
             fontFamily: 'Serif',
           ),
@@ -27,17 +28,19 @@ class ProfileSetupScreen extends StatelessWidget {
         elevation: 0,
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(24),
+        padding: EdgeInsets.all(24.w),
         child: Column(
           children: [
             Stack(
               children: [
-                const CircleAvatar(
-                  radius: 50,
-                  backgroundColor: Color(0xFFFFCCBC), // Light orange/skin tone
+                CircleAvatar(
+                  radius: 50.r,
+                  backgroundColor: const Color(
+                    0xFFFFCCBC,
+                  ), // Light orange/skin tone
                   child: Icon(
                     Icons.person,
-                    size: 60,
+                    size: 60.sp,
                     color: Colors.brown,
                   ), // Fallback for image
                 ),
@@ -45,32 +48,28 @@ class ProfileSetupScreen extends StatelessWidget {
                   bottom: 0,
                   right: 0,
                   child: Container(
-                    padding: const EdgeInsets.all(6),
+                    padding: EdgeInsets.all(6.w),
                     decoration: const BoxDecoration(
                       color: AppColors.pink,
                       shape: BoxShape.circle,
                     ),
-                    child: const Icon(
-                      Icons.edit,
-                      size: 16,
-                      color: Colors.white,
-                    ),
+                    child: Icon(Icons.edit, size: 16.sp, color: Colors.white),
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 24),
+            SizedBox(height: 24.h),
             Text(
               "Begin Your Journey",
-              style: AppTheme.serifTitleStyle.copyWith(fontSize: 28),
+              style: AppTheme.serifTitleStyle.copyWith(fontSize: 28.sp),
             ),
-            const SizedBox(height: 8),
-            const Text(
+            SizedBox(height: 8.h),
+            Text(
               "Tell us about yourself to start your storytelling habit.",
               textAlign: TextAlign.center,
-              style: TextStyle(color: AppColors.greyText, fontSize: 15),
+              style: TextStyle(color: AppColors.greyText, fontSize: 15.sp),
             ),
-            const SizedBox(height: 40),
+            SizedBox(height: 40.h),
 
             const CustomTextField(
               label: "Full Name",
@@ -78,7 +77,7 @@ class ProfileSetupScreen extends StatelessWidget {
               icon: Icons.person_outline,
             ),
 
-            const SizedBox(height: 32),
+            SizedBox(height: 32.h),
 
             Align(
               alignment: Alignment.centerLeft,
@@ -86,51 +85,51 @@ class ProfileSetupScreen extends StatelessWidget {
                 "Daily Reminder",
                 style: AppTheme.serifTitleStyle.copyWith(
                   fontWeight: FontWeight.w600,
-                  fontSize: 14,
+                  fontSize: 14.sp,
                 ),
               ),
             ),
-            const SizedBox(height: 8),
-            const Text(
+            SizedBox(height: 8.h),
+            Text(
               "Choose a time that works best for your daily reflection. Consistency is the key to memory.",
-              style: TextStyle(color: AppColors.greyText, fontSize: 13),
+              style: TextStyle(color: AppColors.greyText, fontSize: 13.sp),
             ),
-            const SizedBox(height: 20),
+            SizedBox(height: 20.h),
 
             Container(
-              padding: const EdgeInsets.all(16),
+              padding: EdgeInsets.all(16.w),
               decoration: BoxDecoration(
                 color: Colors.white,
-                borderRadius: BorderRadius.circular(20),
+                borderRadius: BorderRadius.circular(20.r),
                 boxShadow: [
                   BoxShadow(
                     color: Colors.grey.shade100,
-                    blurRadius: 10,
-                    offset: const Offset(0, 5),
+                    blurRadius: 10.r,
+                    offset: Offset(0, 5.h),
                   ),
                 ],
               ),
               child: Row(
                 children: [
                   Container(
-                    padding: const EdgeInsets.all(10),
+                    padding: EdgeInsets.all(10.w),
                     decoration: BoxDecoration(
                       color: const Color(0xFFFEF2F6),
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(12.r),
                     ),
                     child: const Icon(
                       Icons.notifications_active,
                       color: AppColors.pink,
                     ),
                   ),
-                  const SizedBox(width: 16),
+                  SizedBox(width: 16.w),
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
+                      Text(
                         "REMINDER TIME",
                         style: TextStyle(
-                          fontSize: 10,
+                          fontSize: 10.sp,
                           color: Colors.grey,
                           fontWeight: FontWeight.bold,
                         ),
@@ -138,23 +137,24 @@ class ProfileSetupScreen extends StatelessWidget {
                       Text(
                         "09:00 PM",
                         style: AppTheme.serifTitleStyle.copyWith(
-                          fontSize: 18,
+                          fontSize: 18.sp,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
                     ],
                   ),
                   const Spacer(),
-                  const Icon(Icons.access_time, size: 18),
-                  const SizedBox(width: 16),
-                  const Text(
+                  Icon(Icons.access_time, size: 18.sp),
+                  SizedBox(width: 16.w),
+                  Text(
                     "Daily",
                     style: TextStyle(
                       color: AppColors.pink,
                       fontWeight: FontWeight.bold,
+                      fontSize: 14.sp,
                     ),
                   ),
-                  const SizedBox(width: 8),
+                  SizedBox(width: 8.w),
                   Switch(
                     value: true,
                     onChanged: (v) {},
@@ -163,42 +163,42 @@ class ProfileSetupScreen extends StatelessWidget {
                 ],
               ),
             ),
-            const SizedBox(height: 24),
+            SizedBox(height: 24.h),
             Container(
-              padding: const EdgeInsets.all(16),
+              padding: EdgeInsets.all(16.w),
               decoration: BoxDecoration(
                 color: const Color(0xFFFEF2F6),
-                borderRadius: BorderRadius.circular(16),
+                borderRadius: BorderRadius.circular(16.r),
                 border: Border.all(
                   color: AppColors.pink.withOpacity(0.3),
                   style: BorderStyle.solid,
                 ), // Dashed border simulated
               ),
-              child: const Row(
+              child: Row(
                 children: [
-                  Icon(Icons.auto_awesome, color: AppColors.pink, size: 20),
-                  SizedBox(width: 12),
+                  Icon(Icons.auto_awesome, color: AppColors.pink, size: 20.sp),
+                  SizedBox(width: 12.w),
                   Expanded(
                     child: Text(
                       "90% of journalers find that evening reflection improves sleep quality and clarity of thought.",
                       style: TextStyle(
                         fontStyle: FontStyle.italic,
-                        fontSize: 12,
-                        color: Color(0xFF555555),
+                        fontSize: 12.sp,
+                        color: const Color(0xFF555555),
                       ),
                     ),
                   ),
                 ],
               ),
             ),
-            const SizedBox(height: 40),
+            SizedBox(height: 40.h),
             PrimaryButton(text: "Complete Setup", onTap: onComplete),
-            const SizedBox(height: 16),
-            const Text(
+            SizedBox(height: 16.h),
+            Text(
               "You can always change these settings later.",
-              style: TextStyle(color: Colors.grey, fontSize: 12),
+              style: TextStyle(color: Colors.grey, fontSize: 12.sp),
             ),
-            const SizedBox(height: 20),
+            SizedBox(height: 20.h),
           ],
         ),
       ),

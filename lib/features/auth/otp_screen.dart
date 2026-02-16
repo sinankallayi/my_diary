@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../core/app_colors.dart';
 import '../../core/app_theme.dart';
 import '../../shared/widgets/primary_button.dart';
@@ -12,10 +13,10 @@ class OTPScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         leading: Container(
-          margin: const EdgeInsets.all(8),
+          margin: EdgeInsets.all(8.w),
           decoration: BoxDecoration(
             color: const Color(0xFFFEF2F6),
-            borderRadius: BorderRadius.circular(50),
+            borderRadius: BorderRadius.circular(50.r),
           ),
           child: const Icon(Icons.arrow_back, color: AppColors.pink),
         ),
@@ -23,24 +24,24 @@ class OTPScreen extends StatelessWidget {
         elevation: 0,
       ),
       body: Padding(
-        padding: const EdgeInsets.all(24.0),
+        padding: EdgeInsets.all(24.0.w),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
               "Verify Identity",
-              style: AppTheme.serifTitleStyle.copyWith(fontSize: 32),
+              style: AppTheme.serifTitleStyle.copyWith(fontSize: 32.sp),
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: 16.h),
             RichText(
-              text: const TextSpan(
+              text: TextSpan(
                 style: TextStyle(
                   color: AppColors.greyText,
-                  fontSize: 16,
+                  fontSize: 16.sp,
                   height: 1.5,
                 ),
                 children: [
-                  TextSpan(
+                  const TextSpan(
                     text:
                         "We've sent a 6-digit verification code to your registered mobile number ",
                   ),
@@ -49,50 +50,55 @@ class OTPScreen extends StatelessWidget {
                     style: TextStyle(
                       color: AppColors.darkText,
                       fontWeight: FontWeight.bold,
+                      fontSize: 16.sp, // Explicit font size to match parent
                     ),
                   ),
-                  TextSpan(text: "."),
+                  const TextSpan(text: "."),
                 ],
               ),
             ),
-            const SizedBox(height: 40),
+            SizedBox(height: 40.h),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: List.generate(6, (index) => _otpDigit()),
             ),
-            const SizedBox(height: 40),
+            SizedBox(height: 40.h),
             PrimaryButton(
               text: "Verify Code",
               onTap: onVerify,
               showArrow: true,
             ),
-            const SizedBox(height: 32),
+            SizedBox(height: 32.h),
             const Center(
               child: Text(
                 "Didn't receive the code?",
                 style: TextStyle(color: AppColors.greyText),
               ),
             ),
-            const SizedBox(height: 8),
-            const Center(
+            SizedBox(height: 8.h),
+            Center(
               child: Text(
                 "Resend New Code",
                 style: TextStyle(
                   color: AppColors.pink,
                   fontWeight: FontWeight.bold,
+                  fontSize: 14.sp,
                 ),
               ),
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: 16.h),
             Center(
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Icon(Icons.access_time, size: 14, color: Colors.grey),
-                  const SizedBox(width: 4),
+                  Icon(Icons.access_time, size: 14.sp, color: Colors.grey),
+                  SizedBox(width: 4.w),
                   Text(
                     "Resend available in 0:45",
-                    style: TextStyle(color: Colors.grey.shade400, fontSize: 12),
+                    style: TextStyle(
+                      color: Colors.grey.shade400,
+                      fontSize: 12.sp,
+                    ),
                   ),
                 ],
               ),
@@ -105,16 +111,16 @@ class OTPScreen extends StatelessWidget {
 
   Widget _otpDigit() {
     return Container(
-      width: 45,
-      height: 55,
+      width: 45.w,
+      height: 55.h,
       decoration: BoxDecoration(
         color: AppColors.inputBg,
         borderRadius: BorderRadius.circular(
-          12,
+          12.r,
         ), // Not fully circle based on screenshot
       ),
-      child: const Center(
-        child: CircleAvatar(backgroundColor: AppColors.darkText, radius: 3),
+      child: Center(
+        child: CircleAvatar(backgroundColor: AppColors.darkText, radius: 3.r),
       ),
     );
   }
