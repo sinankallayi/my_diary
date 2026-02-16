@@ -53,7 +53,10 @@ class _MainNavigationControllerState extends State<MainNavigationController> {
           contactInfo: _loginInput ?? "",
         );
       case 3:
-        return ProfileSetupScreen(onComplete: _goToHome);
+        return ProfileSetupScreen(
+          onComplete: _goToHome,
+          onBack: _previousScreen,
+        );
       case 4:
         return const HomeScreen();
       default:

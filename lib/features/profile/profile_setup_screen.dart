@@ -1,19 +1,48 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:image_picker/image_picker.dart';
+
 import '../../core/app_colors.dart';
 import '../../core/app_theme.dart';
 import '../../shared/widgets/custom_text_field.dart';
 import '../../shared/widgets/primary_button.dart';
 
-class ProfileSetupScreen extends StatelessWidget {
+class ProfileSetupScreen extends StatefulWidget {
   final VoidCallback onComplete;
-  const ProfileSetupScreen({super.key, required this.onComplete});
+  final VoidCallback? onBack;
+  const ProfileSetupScreen({super.key, required this.onComplete, this.onBack});
+
+  @override
+  State<ProfileSetupScreen> createState() => _ProfileSetupScreenState();
+}
+
+class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
+  File? _image;
+  bool _isReminderEnabled = true;
+
+  Future<void> _pickImage() async {
+    final picker = ImagePicker();
+    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+
+    if (pickedFile != null) {
+      setState(() {
+        _image = File(pickedFile.path);
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        leading: const Icon(Icons.arrow_back, color: AppColors.pink),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: AppColors.pink),
+          onPressed: () {
+            widget.onBack?.call();
+          },
+        ),
         title: Text(
           "Profile Setup",
           style: TextStyle(
@@ -33,27 +62,32 @@ class ProfileSetupScreen extends StatelessWidget {
           children: [
             Stack(
               children: [
-                CircleAvatar(
-                  radius: 50.r,
-                  backgroundColor: const Color(
-                    0xFFFFCCBC,
-                  ), // Light orange/skin tone
-                  child: Icon(
-                    Icons.person,
-                    size: 60.sp,
-                    color: Colors.brown,
-                  ), // Fallback for image
+                GestureDetector(
+                  onTap: _pickImage,
+                  child: CircleAvatar(
+                    radius: 50.r,
+                    backgroundColor: const Color(
+                      0xFFFFCCBC,
+                    ), // Light orange/skin tone
+                    backgroundImage: _image != null ? FileImage(_image!) : null,
+                    child: _image == null
+                        ? Icon(Icons.person, size: 60.sp, color: Colors.brown)
+                        : null, // Fallback for image
+                  ),
                 ),
                 Positioned(
                   bottom: 0,
                   right: 0,
-                  child: Container(
-                    padding: EdgeInsets.all(6.w),
-                    decoration: const BoxDecoration(
-                      color: AppColors.pink,
-                      shape: BoxShape.circle,
+                  child: GestureDetector(
+                    onTap: _pickImage,
+                    child: Container(
+                      padding: EdgeInsets.all(6.w),
+                      decoration: const BoxDecoration(
+                        color: AppColors.pink,
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(Icons.edit, size: 16.sp, color: Colors.white),
                     ),
-                    child: Icon(Icons.edit, size: 16.sp, color: Colors.white),
                   ),
                 ),
               ],
@@ -156,8 +190,12 @@ class ProfileSetupScreen extends StatelessWidget {
                   ),
                   SizedBox(width: 8.w),
                   Switch(
-                    value: true,
-                    onChanged: (v) {},
+                    value: _isReminderEnabled,
+                    onChanged: (v) {
+                      setState(() {
+                        _isReminderEnabled = v;
+                      });
+                    },
                     activeColor: AppColors.pink,
                   ),
                 ],
@@ -192,7 +230,7 @@ class ProfileSetupScreen extends StatelessWidget {
               ),
             ),
             SizedBox(height: 40.h),
-            PrimaryButton(text: "Complete Setup", onTap: onComplete),
+            PrimaryButton(text: "Complete Setup", onTap: widget.onComplete),
             SizedBox(height: 16.h),
             Text(
               "You can always change these settings later.",
