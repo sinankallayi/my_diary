@@ -5,9 +5,23 @@ import '../../core/app_theme.dart';
 import '../../shared/widgets/custom_text_field.dart';
 import '../../shared/widgets/primary_button.dart';
 
-class LoginScreen extends StatelessWidget {
-  final VoidCallback onLogin;
+class LoginScreen extends StatefulWidget {
+  final Function(String) onLogin;
   const LoginScreen({super.key, required this.onLogin});
+
+  @override
+  State<LoginScreen> createState() => _LoginScreenState();
+}
+
+class _LoginScreenState extends State<LoginScreen> {
+  final _formKey = GlobalKey<FormState>();
+  final _controller = TextEditingController();
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -15,113 +29,159 @@ class LoginScreen extends StatelessWidget {
       body: SafeArea(
         child: SingleChildScrollView(
           padding: EdgeInsets.symmetric(horizontal: 24.w),
-          child: Column(
-            children: [
-              SizedBox(height: 40.h),
-              // Icon
-              Container(
-                padding: EdgeInsets.all(20.w),
-                decoration: BoxDecoration(
-                  color: AppColors.pink.withOpacity(0.1),
-                  shape: BoxShape.circle,
+          child: Form(
+            key: _formKey,
+            child: Column(
+              children: [
+                SizedBox(height: 40.h),
+                // Icon
+                Container(
+                  padding: EdgeInsets.all(20.w),
+                  decoration: BoxDecoration(
+                    color: AppColors.pink.withOpacity(0.1),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    Icons.menu_book_rounded,
+                    color: AppColors.pink,
+                    size: 32.sp,
+                  ),
                 ),
-                child: Icon(
-                  Icons.menu_book_rounded,
-                  color: AppColors.pink,
-                  size: 32.sp,
+                SizedBox(height: 24.h),
+                Text(
+                  "My Diary",
+                  style: AppTheme.serifTitleStyle.copyWith(fontSize: 32.sp),
                 ),
-              ),
-              SizedBox(height: 24.h),
-              Text(
-                "My Diary",
-                style: AppTheme.serifTitleStyle.copyWith(fontSize: 32.sp),
-              ),
-              SizedBox(height: 8.h),
-              Text(
-                "Welcome back to your private space.",
-                textAlign: TextAlign.center,
-                style: AppTheme.serifTitleStyle.copyWith(
-                  color: AppColors.greyText,
-                  fontSize: 16.sp,
-                  fontStyle: FontStyle.italic,
+                SizedBox(height: 8.h),
+                Text(
+                  "Welcome back to your private space.",
+                  textAlign: TextAlign.center,
+                  style: AppTheme.serifTitleStyle.copyWith(
+                    color: AppColors.greyText,
+                    fontSize: 16.sp,
+                    fontStyle: FontStyle.italic,
+                  ),
                 ),
-              ),
-              SizedBox(height: 48.h),
+                SizedBox(height: 48.h),
 
-              const CustomTextField(
-                label: "Email or Phone Number",
-                hint: "e.g. hello@diary.com",
-              ),
-              SizedBox(height: 32.h),
+                CustomTextField(
+                  label: "Email or Phone Number",
+                  hint: "e.g. hello@diary.com",
+                  controller: _controller,
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return "Please enter your email or phone number";
+                    }
+                    // Simple regex for email or phone
+                    bool isEmail = RegExp(
+                      r"^[a-zA-Z0-9.]+@[a-zA-Z0-9]+\.[a-zA-Z]+",
+                    ).hasMatch(value);
+                    bool isPhone = RegExp(r"^[0-9]{10,}$").hasMatch(value);
 
-              PrimaryButton(text: "Get OTP", onTap: onLogin),
+                    if (!isEmail && !isPhone) {
+                      return "Enter a valid email or phone number";
+                    }
+                    return null;
+                  },
+                ),
+                SizedBox(height: 32.h),
 
-              SizedBox(height: 40.h),
-              Row(
-                children: [
-                  Expanded(child: Divider(color: Colors.grey.shade300)),
-                  Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 16.w),
-                    child: Text(
-                      "OR CONTINUE WITH",
-                      style: TextStyle(
-                        fontSize: 11.sp,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.grey,
+                PrimaryButton(
+                  text: "Get OTP",
+                  onTap: () async {
+                    if (_formKey.currentState!.validate()) {
+                      FocusScope.of(context).unfocus();
+                      await Future.delayed(const Duration(milliseconds: 300));
+                      widget.onLogin(_controller.text);
+                    }
+                  },
+                ),
+
+                SizedBox(height: 40.h),
+                Row(
+                  children: [
+                    Expanded(child: Divider(color: Colors.grey.shade300)),
+                    Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 16.w),
+                      child: Text(
+                        "OR CONTINUE WITH",
+                        style: TextStyle(
+                          fontSize: 11.sp,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.grey,
+                        ),
                       ),
                     ),
-                  ),
-                  Expanded(child: Divider(color: Colors.grey.shade300)),
-                ],
-              ),
-              SizedBox(height: 32.h),
-              Row(
-                children: [
-                  Expanded(
-                    child: _socialBtn("Google", Icons.g_mobiledata),
-                  ), // Placeholder icon
-                  SizedBox(width: 16.w),
-                  Expanded(child: _socialBtn("Apple", Icons.apple)),
-                ],
-              ),
-              SizedBox(height: 60.h),
-              Container(
-                padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
-                decoration: BoxDecoration(
-                  border: Border.all(color: Colors.grey.shade200),
-                  borderRadius: BorderRadius.circular(20.r),
+                    Expanded(child: Divider(color: Colors.grey.shade300)),
+                  ],
                 ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
+                SizedBox(height: 32.h),
+                Row(
                   children: [
-                    Icon(Icons.lock, size: 14.sp, color: Colors.grey),
-                    SizedBox(width: 8.w),
-                    Text(
-                      "END-TO-END ENCRYPTED",
-                      style: TextStyle(
-                        fontSize: 10.sp,
-                        fontWeight: FontWeight.bold,
-                        color: AppColors.darkText,
+                    Expanded(
+                      child: _socialBtn(
+                        "Google",
+                        Image.asset(
+                          "assets/images/google_logo.png",
+                          width: 24.w,
+                          height: 24.h,
+                        ),
+                      ),
+                    ),
+                    SizedBox(width: 16.w),
+                    Expanded(
+                      child: _socialBtn(
+                        "Apple",
+                        Icon(Icons.apple, color: Colors.black, size: 24.sp),
                       ),
                     ),
                   ],
                 ),
-              ),
-              SizedBox(height: 16.h),
-              Text(
-                "Your thoughts are for your eyes only. No one, not even us, can read your diary entries.",
-                textAlign: TextAlign.center,
-                style: TextStyle(color: Colors.grey.shade400, fontSize: 12.sp),
-              ),
-              SizedBox(height: 20.h),
-            ],
+                SizedBox(height: 60.h),
+                Container(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: 16.w,
+                    vertical: 8.h,
+                  ),
+                  decoration: BoxDecoration(
+                    border: Border.all(color: Colors.grey.shade200),
+                    borderRadius: BorderRadius.circular(20.r),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.lock, size: 14.sp, color: Colors.grey),
+                      SizedBox(width: 8.w),
+                      Text(
+                        "END-TO-END ENCRYPTED",
+                        style: TextStyle(
+                          fontSize: 10.sp,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.darkText,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                SizedBox(height: 16.h),
+                Text(
+                  "Your thoughts are for your eyes only. No one, not even us, can read your diary entries.",
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: Colors.grey.shade400,
+                    fontSize: 12.sp,
+                  ),
+                ),
+                SizedBox(height: 20.h),
+              ],
+            ),
           ),
         ),
       ),
     );
   }
 
-  Widget _socialBtn(String text, IconData icon) {
+  Widget _socialBtn(String text, Widget icon) {
     return OutlinedButton(
       onPressed: () {},
       style: OutlinedButton.styleFrom(
@@ -134,7 +194,7 @@ class LoginScreen extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(icon, color: Colors.black, size: 20.sp),
+          icon,
           SizedBox(width: 8.w),
           Text(
             text,

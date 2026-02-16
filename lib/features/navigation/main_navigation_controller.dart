@@ -15,9 +15,13 @@ class MainNavigationController extends StatefulWidget {
 
 class _MainNavigationControllerState extends State<MainNavigationController> {
   int _currentIndex = 0;
+  String? _loginInput;
 
-  void _nextScreen() {
+  void _nextScreen([String? input]) {
     setState(() {
+      if (input != null) {
+        _loginInput = input;
+      }
       if (_currentIndex < 4) _currentIndex++;
     });
   }
@@ -28,16 +32,26 @@ class _MainNavigationControllerState extends State<MainNavigationController> {
     });
   }
 
+  void _previousScreen() {
+    setState(() {
+      if (_currentIndex > 0) _currentIndex--;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     // We map the index to the specific screen widget
     switch (_currentIndex) {
       case 0:
-        return SplashScreen(onFinish: _nextScreen);
+        return SplashScreen(onFinish: () => _nextScreen());
       case 1:
-        return LoginScreen(onLogin: _nextScreen);
+        return LoginScreen(onLogin: (input) => _nextScreen(input));
       case 2:
-        return OTPScreen(onVerify: _nextScreen);
+        return OTPScreen(
+          onVerify: () => _nextScreen(),
+          onBack: _previousScreen,
+          contactInfo: _loginInput ?? "",
+        );
       case 3:
         return ProfileSetupScreen(onComplete: _goToHome);
       case 4:

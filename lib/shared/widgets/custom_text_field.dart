@@ -8,11 +8,16 @@ class CustomTextField extends StatelessWidget {
   final String hint;
   final IconData? icon;
 
+  final TextEditingController? controller;
+  final String? Function(String?)? validator;
+
   const CustomTextField({
     super.key,
     required this.label,
     this.hint = '',
     this.icon,
+    this.controller,
+    this.validator,
   });
 
   @override
@@ -31,30 +36,43 @@ class CustomTextField extends StatelessWidget {
           ),
           SizedBox(height: 10.h),
         ],
-        Container(
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(30.r),
-            border: Border.all(color: Colors.grey.shade200),
-          ),
-          child: TextField(
-            decoration: InputDecoration(
-              hintText: hint,
-              hintStyle: TextStyle(
-                color: Colors.grey.shade400,
-                fontSize: 14.sp,
-              ),
-              prefixIcon: icon != null
-                  ? Icon(icon, color: AppColors.pink, size: 24.sp)
-                  : SizedBox(width: 20.w),
-              prefixIconConstraints: icon == null
-                  ? BoxConstraints(minWidth: 20.w)
-                  : null,
-              border: InputBorder.none,
-              contentPadding: EdgeInsets.symmetric(
-                horizontal: 20.w,
-                vertical: 16.h,
-              ),
+        TextFormField(
+          controller: controller,
+          validator: validator,
+          decoration: InputDecoration(
+            filled: true,
+            fillColor: Colors.white,
+            hintText: hint,
+            hintStyle: TextStyle(color: Colors.grey.shade400, fontSize: 14.sp),
+            prefixIcon: icon != null
+                ? Icon(icon, color: AppColors.pink, size: 24.sp)
+                : SizedBox(width: 20.w),
+            prefixIconConstraints: icon == null
+                ? BoxConstraints(minWidth: 20.w)
+                : null,
+            contentPadding: EdgeInsets.symmetric(
+              horizontal: 20.w,
+              vertical: 16.h,
+            ),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(30.r),
+              borderSide: BorderSide(color: Colors.grey.shade200),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(30.r),
+              borderSide: BorderSide(color: Colors.grey.shade200),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(30.r),
+              borderSide: const BorderSide(color: AppColors.pink),
+            ),
+            errorBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(30.r),
+              borderSide: const BorderSide(color: Colors.red),
+            ),
+            focusedErrorBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(30.r),
+              borderSide: const BorderSide(color: Colors.red),
             ),
           ),
         ),
