@@ -1,4 +1,8 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../core/app_colors.dart';
 import '../../core/app_theme.dart';
@@ -12,6 +16,51 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   int _bottomNavIndex = 0;
+  File? _profileImage;
+  String _userName = "Friend";
+  String _greeting = "Good Morning";
+  String _currentDate = "";
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUserData();
+    _updateTimeAndDate();
+  }
+
+  Future<void> _loadUserData() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      final imagePath = prefs.getString('profile_image_path');
+      if (imagePath != null) {
+        _profileImage = File(imagePath);
+      }
+
+      final name = prefs.getString('user_name');
+      if (name != null && name.isNotEmpty) {
+        _userName = name;
+      }
+    });
+  }
+
+  void _updateTimeAndDate() {
+    final now = DateTime.now();
+    final hour = now.hour;
+
+    String greeting;
+    if (hour < 12) {
+      greeting = "Good Morning";
+    } else if (hour < 17) {
+      greeting = "Good Afternoon";
+    } else {
+      greeting = "Good Evening";
+    }
+
+    setState(() {
+      _greeting = greeting;
+      _currentDate = DateFormat('EEEE, MMMM d').format(now);
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -28,22 +77,25 @@ class _HomeScreenState extends State<HomeScreen> {
                 children: [
                   CircleAvatar(
                     radius: 20.r,
-                    backgroundImage: const NetworkImage(
-                      'https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-1.2.1&auto=format&fit=crop&w=100&q=80',
-                    ),
+                    backgroundImage: _profileImage != null
+                        ? FileImage(_profileImage!)
+                        : const NetworkImage(
+                                'https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-1.2.1&auto=format&fit=crop&w=100&q=80',
+                              )
+                              as ImageProvider,
                   ),
                   SizedBox(width: 12.w),
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        "Good Morning, Sarah",
+                        "$_greeting, $_userName",
                         style: AppTheme.serifTitleStyle.copyWith(
                           fontSize: 18.sp,
                         ),
                       ),
                       Text(
-                        "Thursday, October 24",
+                        _currentDate,
                         style: TextStyle(
                           color: AppColors.greyText,
                           fontSize: 12.sp,

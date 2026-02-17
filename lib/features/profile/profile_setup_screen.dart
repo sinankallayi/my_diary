@@ -3,6 +3,9 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:path/path.dart' as path;
 
 import '../../core/app_colors.dart';
 import '../../core/app_theme.dart';
@@ -21,6 +24,13 @@ class ProfileSetupScreen extends StatefulWidget {
 class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
   File? _image;
   bool _isReminderEnabled = true;
+  final TextEditingController _nameController = TextEditingController();
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    super.dispose();
+  }
 
   Future<void> _pickImage() async {
     final picker = ImagePicker();
@@ -105,10 +115,11 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
             ),
             SizedBox(height: 40.h),
 
-            const CustomTextField(
+            CustomTextField(
               label: "Full Name",
               hint: "How should we address you?",
               icon: Icons.person_outline,
+              controller: _nameController,
             ),
 
             SizedBox(height: 32.h),
@@ -230,7 +241,26 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
               ),
             ),
             SizedBox(height: 40.h),
-            PrimaryButton(text: "Complete Setup", onTap: widget.onComplete),
+            PrimaryButton(
+              text: "Complete Setup",
+              onTap: () async {
+                if (_image != null) {
+                  final directory = await getApplicationDocumentsDirectory();
+                  final fileName = path.basename(_image!.path);
+                  final savedImage = await _image!.copy(
+                    '${directory.path}/$fileName',
+                  );
+
+                  final prefs = await SharedPreferences.getInstance();
+                  await prefs.setString('profile_image_path', savedImage.path);
+                }
+
+                final prefs = await SharedPreferences.getInstance();
+                await prefs.setString('user_name', _nameController.text.trim());
+
+                widget.onComplete();
+              },
+            ),
             SizedBox(height: 16.h),
             Text(
               "You can always change these settings later.",
