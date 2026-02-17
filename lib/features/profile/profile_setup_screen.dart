@@ -24,6 +24,7 @@ class ProfileSetupScreen extends StatefulWidget {
 
 class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
   File? _image;
+  String? _networkAvatarUrl; // State for network image
   bool _isReminderEnabled = true;
   TimeOfDay _reminderTime = const TimeOfDay(hour: 21, minute: 0);
   final TextEditingController _nameController = TextEditingController();
@@ -38,13 +39,21 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
     final prefs = await SharedPreferences.getInstance();
     final name = prefs.getString('user_name');
     final imagePath = prefs.getString('profile_image_path');
+    final avatarUrl = prefs.getString('profile_avatar_url'); // Load URL
     final reminderTimeStr = prefs.getString('daily_reminder_time');
     final isReminderEnabled = prefs.getBool('is_reminder_enabled');
 
     if (mounted) {
       setState(() {
         if (name != null) _nameController.text = name;
-        if (imagePath != null) _image = File(imagePath);
+
+        // Prioritize local file if it exists, else use network URL
+        if (imagePath != null && File(imagePath).existsSync()) {
+          _image = File(imagePath);
+        } else if (avatarUrl != null && avatarUrl.isNotEmpty) {
+          _networkAvatarUrl = avatarUrl;
+        }
+
         if (isReminderEnabled != null) _isReminderEnabled = isReminderEnabled;
         if (reminderTimeStr != null) {
           _reminderTime = _parseTime(reminderTimeStr);
@@ -87,6 +96,8 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
     if (pickedFile != null) {
       setState(() {
         _image = File(pickedFile.path);
+        // Clear network URL if local image is picked to prioritize local
+        // _networkAvatarUrl = null;
       });
     }
   }
@@ -161,13 +172,16 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                   onTap: _pickImage,
                   child: CircleAvatar(
                     radius: 50.r,
-                    backgroundColor: const Color(
-                      0xFFFFCCBC,
-                    ), // Light orange/skin tone
-                    backgroundImage: _image != null ? FileImage(_image!) : null,
-                    child: _image == null
+                    backgroundColor: const Color(0xFFFFCCBC),
+                    backgroundImage: _image != null
+                        ? FileImage(_image!)
+                        : (_networkAvatarUrl != null
+                              ? NetworkImage(_networkAvatarUrl!)
+                                    as ImageProvider
+                              : null),
+                    child: (_image == null && _networkAvatarUrl == null)
                         ? Icon(Icons.person, size: 60.sp, color: Colors.brown)
-                        : null, // Fallback for image
+                        : null,
                   ),
                 ),
                 Positioned(
@@ -199,7 +213,6 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
               style: TextStyle(color: AppColors.greyText, fontSize: 15.sp),
             ),
             SizedBox(height: 40.h),
-
             CustomTextField(
               label: "Full Name",
               hint: "How should we address you?",
@@ -216,9 +229,7 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                 return null;
               },
             ),
-
             SizedBox(height: 32.h),
-
             Align(
               alignment: Alignment.centerLeft,
               child: Text(
@@ -235,7 +246,6 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
               style: TextStyle(color: AppColors.greyText, fontSize: 13.sp),
             ),
             SizedBox(height: 20.h),
-
             Container(
               padding: EdgeInsets.all(16.w),
               decoration: BoxDecoration(
@@ -393,6 +403,11 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                     'is_reminder_enabled',
                     _isReminderEnabled,
                   );
+                  // Ensure we update local avatar URL if we just uploaded/confirmed one
+                  // Note: updateProfile actually returns void, so strictly we rely on Login
+                  // or re-fetch for the URL.
+                  // HOWEVER, if we have _image, we rely on local path.
+                  // If we don't have _image, we might have network url.
 
                   widget.onComplete();
                 } catch (e) {

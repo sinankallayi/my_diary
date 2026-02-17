@@ -221,6 +221,12 @@ class _LoginScreenState extends State<LoginScreen> {
                     profile['is_reminder_enabled'],
                   );
                 }
+                if (profile['avatar_url'] != null) {
+                  await prefs.setString(
+                    'profile_avatar_url',
+                    profile['avatar_url'],
+                  );
+                }
               } else {
                 // NEW USER or Profile not set: Auto-fill from Google Metadata
                 final user = SupabaseService().currentUser;
