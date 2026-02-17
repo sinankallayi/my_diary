@@ -130,4 +130,126 @@ class SupabaseService {
 
     await client.from('profiles').upsert(updates);
   }
+
+  // Save Diary Entry
+  Future<void> saveDiaryEntry({
+    required DateTime date,
+    required String content,
+    required List<String> imageUrls,
+  }) async {
+    final userId = currentUser?.id;
+    if (userId == null) throw 'User not logged in';
+
+    final dateStr = date.toIso8601String().split('T').first; // YYYY-MM-DD
+
+    final data = {
+      'user_id': userId,
+      'entry_date': dateStr,
+      'content': content,
+      'images': imageUrls,
+      'updated_at': DateTime.now().toIso8601String(),
+    };
+
+    // Check if entry exists for this date
+    final existingElement = await client
+        .from('diary_entries')
+        .select('id')
+        .eq('user_id', userId)
+        .eq('entry_date', dateStr)
+        .maybeSingle();
+
+    if (existingElement != null) {
+      await client
+          .from('diary_entries')
+          .update(data)
+          .eq('id', existingElement['id']);
+    } else {
+      await client.from('diary_entries').insert(data);
+    }
+  }
+
+  // Get Diary Entry
+  Future<Map<String, dynamic>?> getDiaryEntry(DateTime date) async {
+    final userId = currentUser?.id;
+    if (userId == null) return null;
+
+    final dateStr = date.toIso8601String().split('T').first;
+
+    try {
+      final data = await client
+          .from('diary_entries')
+          .select()
+          .eq('user_id', userId)
+          .eq('entry_date', dateStr)
+          .maybeSingle();
+      return data;
+    } catch (e) {
+      // debugPrint('Error fetching diary entry: $e');
+      return null;
+    }
+  }
+
+  // Upload Diary Image
+  Future<String> uploadDiaryImage(File imageFile) async {
+    final userId = currentUser?.id;
+    if (userId == null) throw 'User not logged in';
+
+    final fileExt = imageFile.path.split('.').last;
+    final fileName = '${DateTime.now().millisecondsSinceEpoch}.$fileExt';
+    final filePath = '$userId/$fileName'; // Folder per user
+
+    await client.storage
+        .from('diary_images')
+        .upload(
+          filePath,
+          imageFile,
+          fileOptions: const FileOptions(cacheControl: '3600', upsert: false),
+        );
+
+    final imageUrl = client.storage.from('diary_images').getPublicUrl(filePath);
+    return imageUrl;
+  }
+
+  // Get All Diary Entries (for Memories)
+  Future<List<Map<String, dynamic>>> getAllDiaryEntries() async {
+    final userId = currentUser?.id;
+    if (userId == null) return [];
+
+    try {
+      final data = await client
+          .from('diary_entries')
+          .select()
+          .eq('user_id', userId)
+          .order('entry_date', ascending: false); // Newest first
+
+      return List<Map<String, dynamic>>.from(data);
+    } catch (e) {
+      // debugPrint('Error fetching all diary entries: $e');
+      return [];
+    }
+  }
+
+  // Get Dates with Entries (for Calendar)
+  Future<List<DateTime>> getDiaryDates() async {
+    final userId = currentUser?.id;
+    if (userId == null) return [];
+
+    try {
+      final data = await client
+          .from('diary_entries')
+          .select('entry_date')
+          .eq('user_id', userId);
+
+      final List<DateTime> dates = [];
+      for (var item in data) {
+        if (item['entry_date'] != null) {
+          dates.add(DateTime.parse(item['entry_date']));
+        }
+      }
+      return dates;
+    } catch (e) {
+      // debugPrint('Error fetching diary dates: $e');
+      return [];
+    }
+  }
 }

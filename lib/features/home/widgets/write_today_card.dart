@@ -1,15 +1,21 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:intl/intl.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:intl/intl.dart';
 import '../../../core/app_colors.dart';
 import '../../../core/app_theme.dart';
+import '../../../services/supabase_service.dart';
 
 class WriteTodayCard extends StatefulWidget {
   final DateTime selectedDate;
-  const WriteTodayCard({super.key, required this.selectedDate});
+  final VoidCallback? onEntrySaved;
+
+  const WriteTodayCard({
+    super.key,
+    required this.selectedDate,
+    this.onEntrySaved,
+  });
 
   @override
   State<WriteTodayCard> createState() => _WriteTodayCardState();
@@ -18,7 +24,7 @@ class WriteTodayCard extends StatefulWidget {
 class _WriteTodayCardState extends State<WriteTodayCard> {
   final TextEditingController _controller = TextEditingController();
   final ImagePicker _picker = ImagePicker();
-  List<String> _imagePaths = [];
+  List<String> _imagePaths = []; // Can be local paths or remote URLs
   bool _isLoading = false;
 
   @override
@@ -53,16 +59,14 @@ class _WriteTodayCardState extends State<WriteTodayCard> {
     });
 
     try {
-      final prefs = await SharedPreferences.getInstance();
-      final dateKey = DateFormat('yyyy-MM-dd').format(widget.selectedDate);
-
-      final savedEntry = prefs.getString('diary_entry_$dateKey');
-      final savedImages = prefs.getStringList('diary_images_$dateKey');
+      final data = await SupabaseService().getDiaryEntry(widget.selectedDate);
 
       if (mounted) {
         setState(() {
-          if (savedEntry != null) _controller.text = savedEntry;
-          if (savedImages != null) _imagePaths = savedImages;
+          if (data != null) {
+            _controller.text = data['content'] ?? '';
+            _imagePaths = List<String>.from(data['images'] ?? []);
+          }
         });
       }
     } catch (e) {
@@ -94,32 +98,37 @@ class _WriteTodayCardState extends State<WriteTodayCard> {
   }
 
   Future<void> _saveEntry() async {
-    // Allow saving empty text if there are images, or empty images if there is text.
-    // If both are empty, we effectively "delete" the entry or just do nothing.
-    // But user might want to delete by clearing everything.
-
     setState(() => _isLoading = true);
 
     try {
-      final prefs = await SharedPreferences.getInstance();
-      final dateKey = DateFormat('yyyy-MM-dd').format(widget.selectedDate);
+      List<String> finalImageUrls = [];
 
-      if (_controller.text.isEmpty) {
-        await prefs.remove('diary_entry_$dateKey');
-      } else {
-        await prefs.setString('diary_entry_$dateKey', _controller.text);
+      // upload new images
+      for (String path in _imagePaths) {
+        if (path.startsWith('http')) {
+          finalImageUrls.add(path);
+        } else {
+          // It's a local file, upload it
+          final url = await SupabaseService().uploadDiaryImage(File(path));
+          finalImageUrls.add(url);
+        }
       }
 
-      if (_imagePaths.isEmpty) {
-        await prefs.remove('diary_images_$dateKey');
-      } else {
-        await prefs.setStringList('diary_images_$dateKey', _imagePaths);
-      }
+      await SupabaseService().saveDiaryEntry(
+        date: widget.selectedDate,
+        content: _controller.text,
+        imageUrls: finalImageUrls,
+      );
 
-      // Also remove single image legacy key if it exists to clean up
-      await prefs.remove('diary_image_$dateKey');
+      // Trigger callback to refresh other parts of the UI (e.g. Memories)
+      widget.onEntrySaved?.call();
 
+      // Update local state with the new URLs to reflect saved state
       if (mounted) {
+        setState(() {
+          _imagePaths = finalImageUrls;
+        });
+
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text("Diary entry saved successfully!")),
         );
@@ -128,7 +137,7 @@ class _WriteTodayCardState extends State<WriteTodayCard> {
       if (mounted) {
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(const SnackBar(content: Text("Failed to save entry.")));
+        ).showSnackBar(SnackBar(content: Text("Failed to save entry: $e")));
       }
     } finally {
       if (mounted) {
@@ -158,9 +167,25 @@ class _WriteTodayCardState extends State<WriteTodayCard> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                "Write Today's Diary",
-                style: AppTheme.serifTitleStyle.copyWith(fontSize: 22.sp),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    isSameDay(widget.selectedDate, DateTime.now())
+                        ? "Write Today's Diary"
+                        : "Write a Diary",
+                    style: AppTheme.serifTitleStyle.copyWith(fontSize: 22.sp),
+                  ),
+                  SizedBox(height: 4.h),
+                  Text(
+                    DateFormat('EEEE, MMMM d, y').format(widget.selectedDate),
+                    style: TextStyle(
+                      fontSize: 14.sp,
+                      color: AppColors.greyText,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
               ),
               GestureDetector(
                 onTap: _pickImage,
@@ -196,6 +221,9 @@ class _WriteTodayCardState extends State<WriteTodayCard> {
                 scrollDirection: Axis.horizontal,
                 itemCount: _imagePaths.length,
                 itemBuilder: (context, index) {
+                  final path = _imagePaths[index];
+                  final isNetwork = path.startsWith('http');
+
                   return Stack(
                     children: [
                       Container(
@@ -205,7 +233,9 @@ class _WriteTodayCardState extends State<WriteTodayCard> {
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(16.r),
                           image: DecorationImage(
-                            image: FileImage(File(_imagePaths[index])),
+                            image: isNetwork
+                                ? NetworkImage(path) as ImageProvider
+                                : FileImage(File(path)),
                             fit: BoxFit.cover,
                           ),
                         ),

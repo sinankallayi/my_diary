@@ -1,8 +1,5 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../core/app_colors.dart';
 import '../../core/app_theme.dart';
@@ -11,6 +8,7 @@ import 'widgets/memories_section.dart';
 import 'widgets/write_today_card.dart';
 import '../profile/profile_setup_screen.dart';
 import '../settings/settings_screen.dart';
+import '../../services/supabase_service.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -21,34 +19,47 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   int _bottomNavIndex = 0;
-  File? _profileImage;
+  String? _profileImageUrl;
   String _userName = "Friend";
   String _greeting = "Good Morning";
   String _currentDate = "";
 
   DateTime _focusedDay = DateTime.now();
   DateTime _selectedDay = DateTime.now();
+  List<DateTime> _diaryDates = [];
+
+  // Key to access MemoriesSection state for refreshing
+  final GlobalKey<MemoriesSectionState> _memoriesKey = GlobalKey();
 
   @override
   void initState() {
     super.initState();
     _loadUserData();
     _updateTimeAndDate();
+    _loadDiaryDates();
   }
 
   Future<void> _loadUserData() async {
-    final prefs = await SharedPreferences.getInstance();
-    setState(() {
-      final imagePath = prefs.getString('profile_image_path');
-      if (imagePath != null) {
-        _profileImage = File(imagePath);
-      }
+    final profile = await SupabaseService().getProfile();
+    if (mounted && profile != null) {
+      setState(() {
+        if (profile['full_name'] != null) {
+          _userName = profile['full_name'];
+        }
+        if (profile['avatar_url'] != null) {
+          _profileImageUrl = profile['avatar_url'];
+        }
+      });
+    }
+  }
 
-      final name = prefs.getString('user_name');
-      if (name != null && name.isNotEmpty) {
-        _userName = name;
-      }
-    });
+  Future<void> _loadDiaryDates() async {
+    final dates = await SupabaseService().getDiaryDates();
+    if (mounted) {
+      setState(() {
+        _diaryDates = dates;
+      });
+    }
   }
 
   void _updateTimeAndDate() {
@@ -96,8 +107,8 @@ class _HomeScreenState extends State<HomeScreen> {
                 },
                 child: CircleAvatar(
                   radius: 20.r,
-                  backgroundImage: _profileImage != null
-                      ? FileImage(_profileImage!)
+                  backgroundImage: _profileImageUrl != null
+                      ? NetworkImage(_profileImageUrl!)
                       : const NetworkImage(
                               'https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-1.2.1&auto=format&fit=crop&w=100&q=80',
                             )
@@ -139,19 +150,27 @@ class _HomeScreenState extends State<HomeScreen> {
           SizedBox(height: 24.h),
 
           // Write Today Card
-          WriteTodayCard(selectedDate: _selectedDay),
-
-          SizedBox(height: 30.h),
+          WriteTodayCard(
+            selectedDate: _selectedDay,
+            onEntrySaved: () {
+              // Refresh memories
+              _memoriesKey.currentState?.refresh();
+              // Refresh calendar dots
+              _loadDiaryDates();
+            },
+          ),
+          SizedBox(height: 20.h),
 
           // Calendar Section
           CalendarWidget(
             focusedDay: _focusedDay,
             selectedDay: _selectedDay,
+            eventDates: _diaryDates,
             onDaySelected: (day) {
               setState(() {
                 _selectedDay = day;
                 _focusedDay = DateTime(day.year, day.month);
-                _currentDate = DateFormat('EEEE, MMMM d').format(day);
+                // _currentDate remains fixed to "Today" regardless of selection
               });
             },
             onPageChanged: (focusedDay) {
@@ -164,8 +183,8 @@ class _HomeScreenState extends State<HomeScreen> {
           SizedBox(height: 30.h),
 
           // Memories Section
-          const MemoriesSection(),
-          SizedBox(height: 20.h),
+          MemoriesSection(key: _memoriesKey),
+          SizedBox(height: 100.h),
         ],
       ),
     );

@@ -189,74 +189,88 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
+  bool _isGoogleLoading = false;
+
   Widget _socialBtn(String text, Widget icon) {
+    bool isLoading = text == "Google" && _isGoogleLoading;
+
     return OutlinedButton(
-      onPressed: () async {
-        if (text == "Google") {
-          try {
-            await SupabaseService().signInWithGoogle();
-            if (mounted) {
-              // 1. Check if profile exists in Supabase
-              final profile = await SupabaseService().getProfile();
+      onPressed: isLoading
+          ? null
+          : () async {
+              if (text == "Google") {
+                setState(() => _isGoogleLoading = true);
+                try {
+                  await SupabaseService().signInWithGoogle();
+                  if (mounted) {
+                    // 1. Check if profile exists in Supabase
+                    final profile = await SupabaseService().getProfile();
 
-              // 2. Prepare data for local storage
-              String userName;
+                    // 2. Prepare data for local storage
+                    String userName;
 
-              // 3. Save to SharedPreferences
-              final prefs = await SharedPreferences.getInstance();
+                    // 3. Save to SharedPreferences
+                    final prefs = await SharedPreferences.getInstance();
 
-              if (profile != null && profile['full_name'] != null) {
-                // Profile exists, use it
-                userName = profile['full_name'];
+                    if (profile != null && profile['full_name'] != null) {
+                      // Profile exists, use it
+                      userName = profile['full_name'];
 
-                if (profile['daily_reminder_time'] != null) {
-                  await prefs.setString(
-                    'daily_reminder_time',
-                    profile['daily_reminder_time'],
-                  );
+                      if (profile['daily_reminder_time'] != null) {
+                        await prefs.setString(
+                          'daily_reminder_time',
+                          profile['daily_reminder_time'],
+                        );
+                      }
+                      if (profile['is_reminder_enabled'] != null) {
+                        await prefs.setBool(
+                          'is_reminder_enabled',
+                          profile['is_reminder_enabled'],
+                        );
+                      }
+                      if (profile['avatar_url'] != null) {
+                        await prefs.setString(
+                          'profile_avatar_url',
+                          profile['avatar_url'],
+                        );
+                      }
+                    } else {
+                      // NEW USER or Profile not set: Auto-fill from Google Metadata
+                      final user = SupabaseService().currentUser;
+                      final meta = user?.userMetadata;
+                      final googleName =
+                          meta?['full_name'] ??
+                          meta?['name'] ??
+                          user?.email ??
+                          '';
+
+                      // Sanitize: Remove @gmail.com and truncate to 10 chars
+                      String sanitized = googleName.toString().split('@').first;
+                      if (sanitized.length > 10) {
+                        sanitized = sanitized.substring(0, 10);
+                      }
+                      userName = sanitized;
+                    }
+
+                    await prefs.setBool('is_logged_in', true);
+                    await prefs.setString('user_name', userName);
+
+                    // 4. Navigate
+                    widget.onLogin(userName);
+                  }
+                } catch (e) {
+                  if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('Google Sign-In failed: $e')),
+                    );
+                  }
+                } finally {
+                  if (mounted) {
+                    setState(() => _isGoogleLoading = false);
+                  }
                 }
-                if (profile['is_reminder_enabled'] != null) {
-                  await prefs.setBool(
-                    'is_reminder_enabled',
-                    profile['is_reminder_enabled'],
-                  );
-                }
-                if (profile['avatar_url'] != null) {
-                  await prefs.setString(
-                    'profile_avatar_url',
-                    profile['avatar_url'],
-                  );
-                }
-              } else {
-                // NEW USER or Profile not set: Auto-fill from Google Metadata
-                final user = SupabaseService().currentUser;
-                final meta = user?.userMetadata;
-                final googleName =
-                    meta?['full_name'] ?? meta?['name'] ?? user?.email ?? '';
-
-                // Sanitize: Remove @gmail.com and truncate to 10 chars
-                String sanitized = googleName.toString().split('@').first;
-                if (sanitized.length > 10) {
-                  sanitized = sanitized.substring(0, 10);
-                }
-                userName = sanitized;
               }
-
-              await prefs.setBool('is_logged_in', true);
-              await prefs.setString('user_name', userName);
-
-              // 4. Navigate
-              widget.onLogin(userName);
-            }
-          } catch (e) {
-            if (mounted) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text('Google Sign-In failed: $e')),
-              );
-            }
-          }
-        }
-      },
+            },
       style: OutlinedButton.styleFrom(
         padding: EdgeInsets.symmetric(vertical: 16.h),
         shape: RoundedRectangleBorder(
@@ -264,21 +278,27 @@ class _LoginScreenState extends State<LoginScreen> {
         ),
         side: BorderSide(color: Colors.grey.shade200),
       ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          icon,
-          SizedBox(width: 8.w),
-          Text(
-            text,
-            style: TextStyle(
-              color: Colors.black,
-              fontWeight: FontWeight.w600,
-              fontSize: 14.sp,
+      child: isLoading
+          ? SizedBox(
+              width: 20.w,
+              height: 20.w,
+              child: const CircularProgressIndicator(strokeWidth: 2),
+            )
+          : Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                icon,
+                SizedBox(width: 8.w),
+                Text(
+                  text,
+                  style: TextStyle(
+                    color: Colors.black,
+                    fontWeight: FontWeight.w600,
+                    fontSize: 14.sp,
+                  ),
+                ),
+              ],
             ),
-          ),
-        ],
-      ),
     );
   }
 }

@@ -2,9 +2,9 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:intl/intl.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import '../../core/app_colors.dart';
 import '../../core/app_theme.dart';
+import '../../services/supabase_service.dart';
 
 class AllMemoriesScreen extends StatefulWidget {
   const AllMemoriesScreen({super.key});
@@ -24,45 +24,64 @@ class _AllMemoriesScreenState extends State<AllMemoriesScreen> {
   }
 
   Future<void> _loadMemories() async {
-    final prefs = await SharedPreferences.getInstance();
-    final keys = prefs.getKeys();
+    setState(() => _isLoading = true);
 
-    final List<Map<String, dynamic>> loadedMemories = [];
+    try {
+      final entries = await SupabaseService().getAllDiaryEntries();
+      final List<Map<String, dynamic>> loadedMemories = [];
 
-    for (String key in keys) {
-      if (key.startsWith('diary_entry_')) {
-        final dateString = key.replaceFirst('diary_entry_', '');
-        try {
-          final date = DateFormat('yyyy-MM-dd').parse(dateString);
-          final text = prefs.getString(key) ?? "";
+      for (var entry in entries) {
+        final date = DateTime.parse(entry['entry_date']);
+        final text = entry['content'] ?? "";
+        final List<dynamic> images = entry['images'] ?? [];
+        // safely cast dynamic list to string list
+        final List<String> imageUrls = images.map((e) => e.toString()).toList();
 
-          List<String> images =
-              prefs.getStringList('diary_images_$dateString') ?? [];
-          if (images.isEmpty) {
-            final singleImage = prefs.getString('diary_image_$dateString');
-            if (singleImage != null) images.add(singleImage);
-          }
-
-          if (text.isNotEmpty || images.isNotEmpty) {
-            loadedMemories.add({'date': date, 'text': text, 'images': images});
-          }
-        } catch (e) {
-          debugPrint("Error parsing date from key $key: $e");
+        if (text.isNotEmpty || imageUrls.isNotEmpty) {
+          loadedMemories.add({'date': date, 'text': text, 'images': imageUrls});
         }
       }
-    }
 
-    // Sort by date descending (newest first)
-    loadedMemories.sort(
-      (a, b) => (b['date'] as DateTime).compareTo(a['date'] as DateTime),
+      if (mounted) {
+        setState(() {
+          _memories = loadedMemories;
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      debugPrint("Error loading all memories: $e");
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
+  }
+
+  void _showImageDialog(String imageUrl) {
+    showDialog(
+      context: context,
+      builder: (context) => Dialog(
+        backgroundColor: Colors.transparent,
+        insetPadding: EdgeInsets.zero,
+        child: Stack(
+          alignment: Alignment.center,
+          children: [
+            InteractiveViewer(
+              child: imageUrl.startsWith('http')
+                  ? Image.network(imageUrl, fit: BoxFit.contain)
+                  : Image.file(File(imageUrl), fit: BoxFit.contain),
+            ),
+            Positioned(
+              top: 40.h,
+              right: 20.w,
+              child: IconButton(
+                icon: const Icon(Icons.close, color: Colors.white, size: 30),
+                onPressed: () => Navigator.pop(context),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
-
-    if (mounted) {
-      setState(() {
-        _memories = loadedMemories;
-        _isLoading = false;
-      });
-    }
   }
 
   @override
@@ -166,14 +185,20 @@ class _AllMemoriesScreenState extends State<AllMemoriesScreen> {
                 scrollDirection: Axis.horizontal,
                 itemCount: images.length,
                 itemBuilder: (context, imgIndex) {
-                  return Container(
-                    margin: EdgeInsets.only(right: 12.w),
-                    width: 100.h,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(12.r),
-                      image: DecorationImage(
-                        image: FileImage(File(images[imgIndex])),
-                        fit: BoxFit.cover,
+                  final imgPath = images[imgIndex];
+                  return GestureDetector(
+                    onTap: () => _showImageDialog(imgPath),
+                    child: Container(
+                      margin: EdgeInsets.only(right: 12.w),
+                      width: 100.h,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(12.r),
+                        image: DecorationImage(
+                          image: imgPath.startsWith('http')
+                              ? NetworkImage(imgPath)
+                              : FileImage(File(imgPath)) as ImageProvider,
+                          fit: BoxFit.cover,
+                        ),
                       ),
                     ),
                   );

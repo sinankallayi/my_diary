@@ -45,8 +45,12 @@ class SettingsScreen extends StatelessWidget {
         try {
           // Clear local session data
           final prefs = await SharedPreferences.getInstance();
-          await prefs
-              .clear(); // Or specific keys: await prefs.remove('is_logged_in');
+          // Clear specific keys to reset user session
+          await prefs.remove('is_logged_in');
+          await prefs.remove('user_name');
+          await prefs.remove('profile_avatar_url');
+          await prefs.remove('daily_reminder_time');
+          await prefs.remove('is_reminder_enabled');
 
           await SupabaseService().client.auth.signOut();
 
@@ -92,41 +96,41 @@ class SettingsScreen extends StatelessWidget {
       body: ListView(
         padding: EdgeInsets.all(20.w),
         children: [
-          _buildSectionHeader('Account'),
-          _buildSettingsContainer(
-            children: [
-              _buildSettingsTile(
-                icon: Icons.person_outline,
-                title: 'Edit Profile',
-                onTap: () {
-                  // Navigate to Profile Setup or Edit
-                },
-              ),
-              const Divider(height: 1),
-              _buildSettingsTile(
-                icon: Icons.notifications_outlined,
-                title: 'Notifications',
-                onTap: () {},
-              ),
-            ],
-          ),
-          SizedBox(height: 24.h),
-          _buildSectionHeader('General'),
-          _buildSettingsContainer(
-            children: [
-              _buildSettingsTile(
-                icon: Icons.security,
-                title: 'Security',
-                onTap: () {},
-              ),
-              const Divider(height: 1),
-              _buildSettingsTile(
-                icon: Icons.help_outline,
-                title: 'Help & Support',
-                onTap: () {},
-              ),
-            ],
-          ),
+          // _buildSectionHeader('Account'),
+          // _buildSettingsContainer(
+          //   children: [
+          //     _buildSettingsTile(
+          //       icon: Icons.person_outline,
+          //       title: 'Edit Profile',
+          //       onTap: () {
+          //         // Navigate to Profile Setup or Edit
+          //       },
+          //     ),
+          //     const Divider(height: 1),
+          //     _buildSettingsTile(
+          //       icon: Icons.notifications_outlined,
+          //       title: 'Notifications',
+          //       onTap: () {},
+          //     ),
+          //   ],
+          // ),
+          // SizedBox(height: 24.h),
+          // _buildSectionHeader('General'),
+          // _buildSettingsContainer(
+          //   children: [
+          //     _buildSettingsTile(
+          //       icon: Icons.security,
+          //       title: 'Security',
+          //       onTap: () {},
+          //     ),
+          //     const Divider(height: 1),
+          //     _buildSettingsTile(
+          //       icon: Icons.help_outline,
+          //       title: 'Help & Support',
+          //       onTap: () {},
+          //     ),
+          //   ],
+          // ),
           SizedBox(height: 24.h),
           _buildSettingsContainer(
             children: [

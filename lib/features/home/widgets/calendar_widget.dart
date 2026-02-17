@@ -7,6 +7,7 @@ import '../../../core/app_theme.dart';
 class CalendarWidget extends StatefulWidget {
   final DateTime focusedDay;
   final DateTime selectedDay;
+  final List<DateTime> eventDates;
   final Function(DateTime) onDaySelected;
   final Function(DateTime) onPageChanged;
 
@@ -14,6 +15,7 @@ class CalendarWidget extends StatefulWidget {
     super.key,
     required this.focusedDay,
     required this.selectedDay,
+    this.eventDates = const [],
     required this.onDaySelected,
     required this.onPageChanged,
   });
@@ -155,6 +157,13 @@ class _CalendarWidgetState extends State<CalendarWidget> {
         day.month == DateTime.now().month &&
         day.day == DateTime.now().day;
 
+    bool hasEvent = widget.eventDates.any(
+      (eventDate) =>
+          eventDate.year == day.year &&
+          eventDate.month == day.month &&
+          eventDate.day == day.day,
+    );
+
     return GestureDetector(
       onTap: () => widget.onDaySelected(day),
       child: Container(
@@ -194,6 +203,17 @@ class _CalendarWidgetState extends State<CalendarWidget> {
                           : AppColors.darkText),
               ),
             ),
+            if (hasEvent && !isSelected) ...[
+              SizedBox(height: 4.h),
+              Container(
+                width: 4.w,
+                height: 4.w,
+                decoration: const BoxDecoration(
+                  color: AppColors.pink,
+                  shape: BoxShape.circle,
+                ),
+              ),
+            ],
           ],
         ),
       ),
