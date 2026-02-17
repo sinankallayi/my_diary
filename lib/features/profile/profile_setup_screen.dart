@@ -11,6 +11,7 @@ import '../../core/app_colors.dart';
 import '../../core/app_theme.dart';
 import '../../shared/widgets/custom_text_field.dart';
 import '../../shared/widgets/primary_button.dart';
+import '../../services/supabase_service.dart';
 
 class ProfileSetupScreen extends StatefulWidget {
   final VoidCallback onComplete;
@@ -24,6 +25,7 @@ class ProfileSetupScreen extends StatefulWidget {
 class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
   File? _image;
   bool _isReminderEnabled = true;
+  TimeOfDay _reminderTime = const TimeOfDay(hour: 21, minute: 0);
   final TextEditingController _nameController = TextEditingController();
 
   @override
@@ -36,12 +38,39 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
     final prefs = await SharedPreferences.getInstance();
     final name = prefs.getString('user_name');
     final imagePath = prefs.getString('profile_image_path');
+    final reminderTimeStr = prefs.getString('daily_reminder_time');
+    final isReminderEnabled = prefs.getBool('is_reminder_enabled');
 
     if (mounted) {
       setState(() {
         if (name != null) _nameController.text = name;
         if (imagePath != null) _image = File(imagePath);
+        if (isReminderEnabled != null) _isReminderEnabled = isReminderEnabled;
+        if (reminderTimeStr != null) {
+          _reminderTime = _parseTime(reminderTimeStr);
+        }
       });
+    }
+  }
+
+  TimeOfDay _parseTime(String timeStr) {
+    try {
+      // Expected format: "hh:mm AM" or "hh:mm PM"
+      final parts = timeStr.split(' ');
+      final timeParts = parts[0].split(':');
+      int hour = int.parse(timeParts[0]);
+      final minute = int.parse(timeParts[1]);
+      final period = parts[1]; // AM or PM
+
+      if (period == 'PM' && hour != 12) {
+        hour += 12;
+      } else if (period == 'AM' && hour == 12) {
+        hour = 0;
+      }
+      return TimeOfDay(hour: hour, minute: minute);
+    } catch (e) {
+      // Fallback
+      return const TimeOfDay(hour: 21, minute: 0);
     }
   }
 
@@ -60,6 +89,43 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
         _image = File(pickedFile.path);
       });
     }
+  }
+
+  Future<void> _selectTime(BuildContext context) async {
+    final TimeOfDay? picked = await showTimePicker(
+      context: context,
+      initialTime: _reminderTime,
+      builder: (context, child) {
+        return Theme(
+          data: AppTheme.lightTheme.copyWith(
+            colorScheme: const ColorScheme.light(
+              primary: AppColors.pink,
+              onPrimary: Colors.white,
+              onSurface: AppColors.darkText,
+            ),
+            textButtonTheme: TextButtonThemeData(
+              style: TextButton.styleFrom(foregroundColor: AppColors.pink),
+            ),
+          ),
+          child: child!,
+        );
+      },
+    );
+    if (picked != null && picked != _reminderTime) {
+      setState(() {
+        _reminderTime = picked;
+      });
+    }
+  }
+
+  String _formatTime(TimeOfDay time) {
+    // Simple manual formatting to avoid intl dependency if not needed,
+    // or use existing logic. Let's do simple 12h format manually for robustness here.
+    final period = time.period == DayPeriod.am ? 'AM' : 'PM';
+    int hour = time.hourOfPeriod;
+    if (hour == 0) hour = 12;
+    final minute = time.minute.toString().padLeft(2, '0');
+    return "${hour.toString().padLeft(2, '0')}:$minute $period";
   }
 
   @override
@@ -139,6 +205,16 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
               hint: "How should we address you?",
               icon: Icons.person_outline,
               controller: _nameController,
+              maxLength: 10,
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return "Please enter your name";
+                }
+                if (value.length > 10) {
+                  return "Name cannot exceed 10 characters";
+                }
+                return null;
+              },
             ),
 
             SizedBox(height: 32.h),
@@ -186,28 +262,31 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                       color: AppColors.pink,
                     ),
                   ),
-                  SizedBox(width: 16.w),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        "REMINDER TIME",
-                        style: TextStyle(
-                          fontSize: 10.sp,
-                          color: Colors.grey,
-                          fontWeight: FontWeight.bold,
-                        ),
+                  Expanded(
+                    child: GestureDetector(
+                      onTap: () => _selectTime(context),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            "REMINDER TIME",
+                            style: TextStyle(
+                              fontSize: 10.sp,
+                              color: Colors.grey,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          Text(
+                            _formatTime(_reminderTime),
+                            style: AppTheme.serifTitleStyle.copyWith(
+                              fontSize: 18.sp,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
                       ),
-                      Text(
-                        "09:00 PM",
-                        style: AppTheme.serifTitleStyle.copyWith(
-                          fontSize: 18.sp,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ],
+                    ),
                   ),
-                  const Spacer(),
                   Icon(Icons.access_time, size: 18.sp),
                   SizedBox(width: 16.w),
                   Text(
@@ -216,6 +295,7 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                       color: AppColors.pink,
                       fontWeight: FontWeight.bold,
                       fontSize: 14.sp,
+                      fontFamily: 'Serif',
                     ),
                   ),
                   SizedBox(width: 8.w),
@@ -263,21 +343,65 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
             PrimaryButton(
               text: "Save Profile",
               onTap: () async {
-                if (_image != null) {
-                  final directory = await getApplicationDocumentsDirectory();
-                  final fileName = path.basename(_image!.path);
-                  final savedImage = await _image!.copy(
-                    '${directory.path}/$fileName',
+                try {
+                  final name = _nameController.text.trim();
+                  if (name.isEmpty) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Please enter your name')),
+                    );
+                    return;
+                  }
+
+                  if (name.length > 10) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Name cannot exceed 10 characters'),
+                      ),
+                    );
+                    return;
+                  }
+
+                  if (_image != null) {
+                    final directory = await getApplicationDocumentsDirectory();
+                    final fileName = path.basename(_image!.path);
+                    // Save locally for offline/cache usage
+                    final savedImage = await _image!.copy(
+                      '${directory.path}/$fileName',
+                    );
+
+                    final prefs = await SharedPreferences.getInstance();
+                    await prefs.setString(
+                      'profile_image_path',
+                      savedImage.path,
+                    );
+                  }
+
+                  final reminderTimeStr = _formatTime(_reminderTime);
+
+                  // Update to Supabase with proper avatarFile
+                  await SupabaseService().updateProfile(
+                    fullName: name,
+                    avatarFile: _image,
+                    isReminderEnabled: _isReminderEnabled,
+                    reminderTime: reminderTimeStr,
                   );
 
                   final prefs = await SharedPreferences.getInstance();
-                  await prefs.setString('profile_image_path', savedImage.path);
+                  await prefs.setString('user_name', name);
+                  await prefs.setString('daily_reminder_time', reminderTimeStr);
+                  await prefs.setBool(
+                    'is_reminder_enabled',
+                    _isReminderEnabled,
+                  );
+
+                  widget.onComplete();
+                } catch (e) {
+                  if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('Error saving profile: $e')),
+                    );
+                  }
                 }
-
-                final prefs = await SharedPreferences.getInstance();
-                await prefs.setString('user_name', _nameController.text.trim());
-
-                widget.onComplete();
               },
             ),
             SizedBox(height: 16.h),

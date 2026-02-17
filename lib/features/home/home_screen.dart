@@ -10,6 +10,7 @@ import 'widgets/calendar_widget.dart';
 import 'widgets/memories_section.dart';
 import 'widgets/write_today_card.dart';
 import '../profile/profile_setup_screen.dart';
+import '../settings/settings_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -69,110 +70,124 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
+  Widget _buildHomeContent() {
+    return SingleChildScrollView(
+      padding: EdgeInsets.all(20.w),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Header
+          Row(
+            children: [
+              GestureDetector(
+                onTap: () async {
+                  await Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => ProfileSetupScreen(
+                        onComplete: () {
+                          Navigator.pop(context);
+                        },
+                        onBack: () => Navigator.pop(context),
+                      ),
+                    ),
+                  );
+                  _loadUserData(); // Refresh user data on return
+                },
+                child: CircleAvatar(
+                  radius: 20.r,
+                  backgroundImage: _profileImage != null
+                      ? FileImage(_profileImage!)
+                      : const NetworkImage(
+                              'https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-1.2.1&auto=format&fit=crop&w=100&q=80',
+                            )
+                            as ImageProvider,
+                ),
+              ),
+              SizedBox(width: 12.w),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    "$_greeting, $_userName",
+                    style: AppTheme.serifTitleStyle.copyWith(fontSize: 18.sp),
+                  ),
+                  Text(
+                    _currentDate,
+                    style: TextStyle(
+                      color: AppColors.greyText,
+                      fontSize: 12.sp,
+                    ),
+                  ),
+                ],
+              ),
+              const Spacer(),
+              Container(
+                padding: EdgeInsets.all(8.w),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(12.r),
+                ),
+                child: Icon(
+                  Icons.lock_outline,
+                  size: 20.sp,
+                  color: const Color(0xFF5C6E8C),
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: 24.h),
+
+          // Write Today Card
+          WriteTodayCard(selectedDate: _selectedDay),
+
+          SizedBox(height: 30.h),
+
+          // Calendar Section
+          CalendarWidget(
+            focusedDay: _focusedDay,
+            selectedDay: _selectedDay,
+            onDaySelected: (day) {
+              setState(() {
+                _selectedDay = day;
+                _focusedDay = DateTime(day.year, day.month);
+                _currentDate = DateFormat('EEEE, MMMM d').format(day);
+              });
+            },
+            onPageChanged: (focusedDay) {
+              setState(() {
+                _focusedDay = focusedDay;
+              });
+            },
+          ),
+
+          SizedBox(height: 30.h),
+
+          // Memories Section
+          const MemoriesSection(),
+          SizedBox(height: 20.h),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPlaceholder(String title) {
+    return Center(child: Text(title, style: AppTheme.serifTitleStyle));
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF9F9FC),
       body: SafeArea(
-        child: SingleChildScrollView(
-          padding: EdgeInsets.all(20.w),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Header
-              Row(
-                children: [
-                  GestureDetector(
-                    onTap: () async {
-                      await Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => ProfileSetupScreen(
-                            onComplete: () {
-                              Navigator.pop(context);
-                            },
-                            onBack: () => Navigator.pop(context),
-                          ),
-                        ),
-                      );
-                      _loadUserData(); // Refresh user data on return
-                    },
-                    child: CircleAvatar(
-                      radius: 20.r,
-                      backgroundImage: _profileImage != null
-                          ? FileImage(_profileImage!)
-                          : const NetworkImage(
-                                  'https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-1.2.1&auto=format&fit=crop&w=100&q=80',
-                                )
-                                as ImageProvider,
-                    ),
-                  ),
-                  SizedBox(width: 12.w),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        "$_greeting, $_userName",
-                        style: AppTheme.serifTitleStyle.copyWith(
-                          fontSize: 18.sp,
-                        ),
-                      ),
-                      Text(
-                        _currentDate,
-                        style: TextStyle(
-                          color: AppColors.greyText,
-                          fontSize: 12.sp,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const Spacer(),
-                  Container(
-                    padding: EdgeInsets.all(8.w),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(12.r),
-                    ),
-                    child: Icon(
-                      Icons.lock_outline,
-                      size: 20.sp,
-                      color: const Color(0xFF5C6E8C),
-                    ),
-                  ),
-                ],
-              ),
-              SizedBox(height: 24.h),
-
-              // Write Today Card
-              WriteTodayCard(selectedDate: _selectedDay),
-
-              SizedBox(height: 30.h),
-
-              // Calendar Section
-              CalendarWidget(
-                focusedDay: _focusedDay,
-                selectedDay: _selectedDay,
-                onDaySelected: (day) {
-                  setState(() {
-                    _selectedDay = day;
-                    _focusedDay = DateTime(day.year, day.month);
-                    _currentDate = DateFormat('EEEE, MMMM d').format(day);
-                  });
-                },
-                onPageChanged: (focusedDay) {
-                  setState(() {
-                    _focusedDay = focusedDay;
-                  });
-                },
-              ),
-
-              SizedBox(height: 30.h),
-
-              // Memories Section
-              const MemoriesSection(),
-              SizedBox(height: 20.h),
-            ],
-          ),
+        child: IndexedStack(
+          index: _bottomNavIndex,
+          children: [
+            _buildHomeContent(),
+            _buildPlaceholder("Explore"),
+            _buildPlaceholder("Archive"),
+            const SettingsScreen(),
+          ],
         ),
       ),
       bottomNavigationBar: BottomNavigationBar(

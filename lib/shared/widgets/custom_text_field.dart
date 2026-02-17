@@ -10,6 +10,7 @@ class CustomTextField extends StatelessWidget {
 
   final TextEditingController? controller;
   final String? Function(String?)? validator;
+  final int? maxLength;
 
   const CustomTextField({
     super.key,
@@ -18,6 +19,7 @@ class CustomTextField extends StatelessWidget {
     this.icon,
     this.controller,
     this.validator,
+    this.maxLength,
   });
 
   @override
@@ -39,6 +41,7 @@ class CustomTextField extends StatelessWidget {
         TextFormField(
           controller: controller,
           validator: validator,
+          maxLength: maxLength,
           decoration: InputDecoration(
             filled: true,
             fillColor: Colors.white,

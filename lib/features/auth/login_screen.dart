@@ -5,6 +5,7 @@ import '../../core/app_theme.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../shared/widgets/custom_text_field.dart';
 import '../../shared/widgets/primary_button.dart';
+import '../../services/supabase_service.dart';
 
 class LoginScreen extends StatefulWidget {
   final Function(String) onLogin;
@@ -190,7 +191,66 @@ class _LoginScreenState extends State<LoginScreen> {
 
   Widget _socialBtn(String text, Widget icon) {
     return OutlinedButton(
-      onPressed: () {},
+      onPressed: () async {
+        if (text == "Google") {
+          try {
+            await SupabaseService().signInWithGoogle();
+            if (mounted) {
+              // 1. Check if profile exists in Supabase
+              final profile = await SupabaseService().getProfile();
+
+              // 2. Prepare data for local storage
+              String userName;
+
+              // 3. Save to SharedPreferences
+              final prefs = await SharedPreferences.getInstance();
+
+              if (profile != null && profile['full_name'] != null) {
+                // Profile exists, use it
+                userName = profile['full_name'];
+
+                if (profile['daily_reminder_time'] != null) {
+                  await prefs.setString(
+                    'daily_reminder_time',
+                    profile['daily_reminder_time'],
+                  );
+                }
+                if (profile['is_reminder_enabled'] != null) {
+                  await prefs.setBool(
+                    'is_reminder_enabled',
+                    profile['is_reminder_enabled'],
+                  );
+                }
+              } else {
+                // NEW USER or Profile not set: Auto-fill from Google Metadata
+                final user = SupabaseService().currentUser;
+                final meta = user?.userMetadata;
+                final googleName =
+                    meta?['full_name'] ?? meta?['name'] ?? user?.email ?? '';
+
+                // Sanitize: Remove @gmail.com and truncate to 10 chars
+                String sanitized = googleName.toString().split('@').first;
+                if (sanitized.length > 10) {
+                  sanitized = sanitized.substring(0, 10);
+                }
+                userName = sanitized;
+              }
+
+              await prefs.setBool('is_logged_in', true);
+              await prefs.setString('user_name', userName);
+
+              // 4. Navigate
+              widget.onLogin(userName);
+            }
+          } catch (e) {
+            if (mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('Google Sign-In failed: $e')),
+              );
+            }
+          }
+        }
+      },
       style: OutlinedButton.styleFrom(
         padding: EdgeInsets.symmetric(vertical: 16.h),
         shape: RoundedRectangleBorder(
