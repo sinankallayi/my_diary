@@ -43,7 +43,10 @@ class _MainNavigationControllerState extends State<MainNavigationController> {
     // We map the index to the specific screen widget
     switch (_currentIndex) {
       case 0:
-        return SplashScreen(onFinish: () => _nextScreen());
+        return SplashScreen(
+          onFinish: () => _nextScreen(),
+          onFoundSession: () => _goToHome(),
+        );
       case 1:
         return LoginScreen(onLogin: (input) => _nextScreen(input));
       case 2:

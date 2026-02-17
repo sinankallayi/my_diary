@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../core/app_colors.dart';
 import '../../core/app_theme.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../shared/widgets/custom_text_field.dart';
 import '../../shared/widgets/primary_button.dart';
 
@@ -91,6 +92,12 @@ class _LoginScreenState extends State<LoginScreen> {
                   onTap: () async {
                     if (_formKey.currentState!.validate()) {
                       FocusScope.of(context).unfocus();
+
+                      // Save login state
+                      final prefs = await SharedPreferences.getInstance();
+                      await prefs.setBool('is_logged_in', true);
+                      await prefs.setString('user_name', _controller.text);
+
                       await Future.delayed(const Duration(milliseconds: 300));
                       widget.onLogin(_controller.text);
                     }

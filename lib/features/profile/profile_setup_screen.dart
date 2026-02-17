@@ -27,6 +27,25 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
   final TextEditingController _nameController = TextEditingController();
 
   @override
+  void initState() {
+    super.initState();
+    _loadUserData();
+  }
+
+  Future<void> _loadUserData() async {
+    final prefs = await SharedPreferences.getInstance();
+    final name = prefs.getString('user_name');
+    final imagePath = prefs.getString('profile_image_path');
+
+    if (mounted) {
+      setState(() {
+        if (name != null) _nameController.text = name;
+        if (imagePath != null) _image = File(imagePath);
+      });
+    }
+  }
+
+  @override
   void dispose() {
     _nameController.dispose();
     super.dispose();
@@ -54,7 +73,7 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
           },
         ),
         title: Text(
-          "Profile Setup",
+          "Profile",
           style: TextStyle(
             color: AppColors.darkText,
             fontSize: 16.sp,
@@ -242,7 +261,7 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
             ),
             SizedBox(height: 40.h),
             PrimaryButton(
-              text: "Complete Setup",
+              text: "Save Profile",
               onTap: () async {
                 if (_image != null) {
                   final directory = await getApplicationDocumentsDirectory();

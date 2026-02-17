@@ -1,12 +1,15 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../core/app_colors.dart';
 import '../../core/app_theme.dart';
 
 class SplashScreen extends StatefulWidget {
   final VoidCallback onFinish;
-  const SplashScreen({super.key, required this.onFinish});
+  final VoidCallback? onFoundSession;
+
+  const SplashScreen({super.key, required this.onFinish, this.onFoundSession});
 
   @override
   State<SplashScreen> createState() => _SplashScreenState();
@@ -16,8 +19,22 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
     super.initState();
-    // Simulate loading delay
-    Timer(const Duration(seconds: 3), widget.onFinish);
+    _checkLoginStatus();
+  }
+
+  Future<void> _checkLoginStatus() async {
+    // Simulate minimum splash duration
+    await Future.delayed(const Duration(seconds: 3));
+
+    // Check login state
+    final prefs = await SharedPreferences.getInstance();
+    final bool isLoggedIn = prefs.getBool('is_logged_in') ?? false;
+
+    if (isLoggedIn && widget.onFoundSession != null) {
+      widget.onFoundSession!();
+    } else {
+      widget.onFinish();
+    }
   }
 
   @override
